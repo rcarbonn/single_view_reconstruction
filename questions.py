@@ -3,9 +3,10 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 
-from camera_matrix import computeP, project_pts, computeK
+from camera_matrix import computeP, project_pts, computeK, computeK2
 from utils import add_lines, annotate, annotate_parallel
-from perspective import vanish_shift
+from perspective import vanish_shift, plane_angles
+from homography import get_homography
 
 DATA_CONFIG = {
         'q1': {
@@ -87,12 +88,28 @@ def q2(args):
     line_pts = (Ht@vpts.T).T
     lines = np.array([line_pts[0], line_pts[1], line_pts[1], line_pts[2], line_pts[0], line_pts[2]])
     ppoint = (Ht@K[:,2]).T
-    fig, ax = plt.subplots()
-    ax.imshow(result)
-    add_lines(ax, lines, ptype='lines')
-    plot_points = np.vstack((line_pts, ppoint))
-    ax.scatter(plot_points[:,0], plot_points[:,1], c='g', s=50)
-    plt.show()
+    if args.debug:
+        fig, ax = plt.subplots()
+        ax.imshow(result)
+        add_lines(ax, lines, ptype='lines')
+        plot_points = np.vstack((line_pts, ppoint))
+        ax.scatter(plot_points[:,0], plot_points[:,1], c='g', s=50)
+        plt.show()
+
+    # q2b
+    img2 = DATA_CONFIG['q2']['img2']
+    annot2 = np.load(DATA_CONFIG['q2']['annot2'], allow_pickle=True)
+    src_pts = np.array([[0,0],[1,0],[1,1],[0,1]])
+    h1s = []
+    h2s = []
+    for dpts in annot2:
+        H = get_homography(src_pts, dpts)
+        h1s.append(H[:,0])
+        h2s.append(H[:,1])
+    K, conic = computeK2(np.array(h1s), np.array(h2s))
+    plane_angles(annot2[0], annot2[1], conic)
+    plane_angles(annot2[1], annot2[2], conic)
+    plane_angles(annot2[0], annot2[2], conic)
 
 def q3(args):
     pass

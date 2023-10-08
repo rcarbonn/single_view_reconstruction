@@ -3,6 +3,13 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D as l2d
 
+def split_annotations(annots):
+    n_annots,_ = annots.shape
+    annots_ = np.hstack((annots, np.ones([n_annots,1], annots.dtype)))
+    annots_ = np.split(annots_, n_annots//2, axis=0)
+    annots = np.split(annots, n_annots//2, axis=0)
+    return annots_, annots
+
 def add_lines(ax, line_annots, ptype='lines', cols='random'):
     n,_ = line_annots.shape
     ldata = np.split(line_annots.T, n//2, axis=1)
