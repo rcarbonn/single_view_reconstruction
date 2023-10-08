@@ -88,13 +88,12 @@ def q2(args):
     line_pts = (Ht@vpts.T).T
     lines = np.array([line_pts[0], line_pts[1], line_pts[1], line_pts[2], line_pts[0], line_pts[2]])
     ppoint = (Ht@K[:,2]).T
-    if args.debug:
-        fig, ax = plt.subplots()
-        ax.imshow(result)
-        add_lines(ax, lines, ptype='lines')
-        plot_points = np.vstack((line_pts, ppoint))
-        ax.scatter(plot_points[:,0], plot_points[:,1], c='g', s=50)
-        plt.show()
+    fig, ax = plt.subplots()
+    ax.imshow(result)
+    add_lines(ax, lines, ptype='lines')
+    plot_points = np.vstack((line_pts, ppoint))
+    ax.scatter(plot_points[:,0], plot_points[:,1], c='g', s=50)
+    plt.show()
 
     # q2b
     img2 = DATA_CONFIG['q2']['img2']
