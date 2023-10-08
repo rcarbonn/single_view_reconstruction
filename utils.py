@@ -35,3 +35,24 @@ def annotate(impath):
     plt.show()
 
     return clicks
+
+def annotate_parallel(impath):
+    im = Image.open(impath)
+    im = np.array(im)
+
+    clicks = []
+
+    def click(event):
+        x, y = event.xdata, event.ydata
+        clicks.append([x, y])
+
+    fig = plt.figure(1)
+    ax = fig.add_subplot(111)
+    ax.imshow(im)
+
+    _ = fig.canvas.mpl_connect('button_press_event', click)
+    plt.show()
+
+    clicks = np.array(clicks).reshape(3,2,4)
+
+    return clicks
