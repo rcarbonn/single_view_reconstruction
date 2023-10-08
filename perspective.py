@@ -46,3 +46,15 @@ def perspective_shift(img, H):
     t = [-xmin, -ymin]
     Ht = np.array([[1, 0, t[0]], [0, 1, t[1]], [0, 0, 1]])
     return Ht
+
+def vanish_shift(img, vpts):
+    h,w = img.shape[:2]
+    pts = np.array([[0, 0], [0, h], [w, h], [w, 0]], dtype=np.float64)
+    pts = np.vstack((pts, vpts))
+    [xmin, ymin] = (pts.min(axis=0).ravel() - 0.5).astype(int)
+    [xmax, ymax] = (pts.max(axis=0).ravel() + 0.5).astype(int)
+    t = [-xmin, -ymin]
+    Ht = np.array([[1, 0, t[0]], [0, 1, t[1]], [0, 0, 1]], dtype=np.float64)
+    result = np.ones((ymax-ymin, xmax-xmin, 3), dtype=np.uint8)*255
+    cv2.warpPerspective(img, Ht, (xmax-xmin, ymax-ymin), result, borderValue=(255,255,255))
+    return result, Ht

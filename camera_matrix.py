@@ -101,6 +101,4 @@ def computeK(pts):
     K = np.linalg.inv(U)
     K = K/K[-1,-1]
     print(K)
-    return K
-
-
+    return K, pts_

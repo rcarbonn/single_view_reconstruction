@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 from camera_matrix import computeP, project_pts, computeK
 from utils import add_lines, annotate, annotate_parallel
+from perspective import vanish_shift
 
 DATA_CONFIG = {
         'q1': {
@@ -69,8 +70,8 @@ def q1(args):
 
 def q2(args):
 
+    img1 = DATA_CONFIG['q2']['img1']
     if not args.new_annot:
-        img1 = DATA_CONFIG['q2']['img1']
         annotations1 = DATA_CONFIG['q2']['annot1']
         annot1 = np.load(annotations1, allow_pickle=True) # shape (3,2,4)
     else:
@@ -81,7 +82,17 @@ def q2(args):
     annots1 = annot1.reshape(-1,2)
     annots1 = np.hstack((annots1, np.ones([annots1.shape[0],1])))
     pts = annots1.reshape(n_annots, 2, 2, 3)
-    computeK(pts)
+    K, vpts = computeK(pts)
+    result, Ht = vanish_shift(np.array(Image.open(img1)), vpts[:,:2])
+    line_pts = (Ht@vpts.T).T
+    lines = np.array([line_pts[0], line_pts[1], line_pts[1], line_pts[2], line_pts[0], line_pts[2]])
+    ppoint = (Ht@K[:,2]).T
+    fig, ax = plt.subplots()
+    ax.imshow(result)
+    add_lines(ax, lines, ptype='lines')
+    plot_points = np.vstack((line_pts, ppoint))
+    ax.scatter(plot_points[:,0], plot_points[:,1], c='g', s=50)
+    plt.show()
 
 def q3(args):
     pass
