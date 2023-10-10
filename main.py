@@ -12,6 +12,9 @@ def main(args):
     if args.question == 'q2':
         q2(args)
 
+    if args.question == 'q3':
+        q3(args)
+
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()

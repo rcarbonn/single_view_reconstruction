@@ -61,6 +61,20 @@ def vanish_shift(img, vpts):
     cv2.warpPerspective(img, Ht, (xmax-xmin, ymax-ymin), result, borderValue=(255,255,255))
     return result, Ht
 
+def plane_normal(pts):
+    pts_ = np.zeros_like(pts)
+    pts_[0] = pts[0]
+    pts_[1] = pts[3]
+    pts_[2] = pts[1]
+    pts_[3] = pts[2]
+
+    pts, _ = split_annotations(pts)
+    pts_, _ = split_annotations(pts_)
+    _,_,vp1 = gen_lines_and_intersection(pts[0], pts[1])
+    _,_,vp2 = gen_lines_and_intersection(pts_[0], pts_[1])
+    vl = proj_line(vp1, vp2)
+    return vl
+
 def plane_angles(pts1, pts2, conic):
 
     pts1_ = np.zeros_like(pts1)

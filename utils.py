@@ -24,6 +24,14 @@ def add_lines(ax, line_annots, ptype='lines', cols='random'):
     elif ptype=='scatter':
         ax.scatter(line_annots[:,0], line_annots[:,1])
 
+def reshape_plane_annots(annots):
+    n_annots, _, _ = annots.shape
+    annots = annots.reshape(-1,2)
+    annot = np.hstack((annots, np.ones([annots.shape[0],1])))
+    pts = annot.reshape(n_annots, 2, 2, 3)
+    return pts
+
+
 def annotate(impath):
     im = Image.open(impath)
     im = np.array(im)
