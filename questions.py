@@ -134,7 +134,7 @@ def q3(args):
     normals = np.array([Kinv @ plane_normal(annots[i]).reshape(-1,1) for i in range(n_annots)])
     directions = (Kinv @ annots_all_.T).T
     # set depth of point 2 = 20 mts along the camera
-    pt2 = 20*directions[1].reshape(-1,1)
+    pt2 = 10*directions[1].reshape(-1,1)
     # point 2 lies on plane 1,2,4,5
     dp1 = -normals[0].T@pt2
     dp2 = -normals[1].T@pt2
@@ -147,9 +147,13 @@ def q3(args):
     plane_depths = [dp1, dp2, dp3, dp4, dp5]
     h,w,c = img.shape
     pts3d = []
+    cols = []
     for i in range(n_annots):
     # for i in range(1):
         mask = cv2.fillConvexPoly(np.zeros((h,w)), annots[i].astype(np.int32), 1)
+        colors = img[mask==1]
+        print(colors)
+        cols.append(colors)
         pts = np.asarray(np.column_stack(np.where(mask == 1)), dtype=np.float32)
         pts = np.flip(pts, axis=1)
         pts_ = np.hstack((pts, np.ones([pts.shape[0],1])))
@@ -161,7 +165,9 @@ def q3(args):
         # plt.show()
     pts3d = np.vstack(pts3d)
     pts3d = pts3d[::10]
+    cols = np.vstack(cols)
+    cols = cols[::10]
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    ax.scatter(pts3d[:,0], pts3d[:,1], pts3d[:,2], c='r', s=0.1)
+    ax.scatter(pts3d[:,0], pts3d[:,1], pts3d[:,2], c=cols/255.0, s=0.1)
     plt.show()
