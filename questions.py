@@ -132,7 +132,10 @@ def q3(args):
     K, vpts = computeK(pts)
     Kinv = np.linalg.inv(K)
     normals = np.array([Kinv @ plane_normal(annots[i]).reshape(-1,1) for i in range(n_annots)])
+    normals = normals.reshape(-1,3)
     directions = (Kinv @ annots_all_.T).T
+    directions = directions/np.linalg.norm(directions, axis=1).reshape(-1,1)
+    normals = normals/np.linalg.norm(normals, axis=1).reshape(-1,1)
     # set depth of point 2 = 20 mts along the camera
     pt2 = 20*directions[1].reshape(-1,1)
     # point 2 lies on plane 1,2,4,5
@@ -156,14 +159,19 @@ def q3(args):
         pts = np.flip(pts, axis=1)
         pts_ = np.hstack((pts, np.ones([pts.shape[0],1])))
         pdirs = (Kinv @ pts_.T).T
+        pdirs = pdirs/np.linalg.norm(pdirs, axis=1).reshape(-1,1)
         l = -plane_depths[i]/pdirs.dot(normals[i])
-        plane_pts = l*pdirs 
+        plane_pts = l.reshape(-1,1)*pdirs
         pts3d.append(plane_pts)
     pts3d = np.vstack(pts3d)
-    # pts3d = pts3d[::10]
+    pts3d = pts3d[::]
     cols = np.vstack(cols)
-    # cols = cols[::10]
+    cols = cols[::]
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    ax.scatter(pts3d[:,0], pts3d[:,1], pts3d[:,2], c=cols/255.0, s=0.1)
+    ax.scatter(pts3d[:,0], pts3d[:,1], pts3d[:,2], c=cols/255.0, s=1.5)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.view_init(elev=-50.0, azim=-90.0, roll=0)
     plt.show()
