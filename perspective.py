@@ -53,15 +53,15 @@ def vanish_shift(img, vpts):
     h,w = img.shape[:2]
     pts = np.array([[0, 0], [0, h], [w, h], [w, 0]], dtype=np.float64)
     pts = np.vstack((pts, vpts))
-    [xmin, ymin] = (pts.min(axis=0).ravel() - 0.5).astype(int)
-    [xmax, ymax] = (pts.max(axis=0).ravel() + 0.5).astype(int)
+    [xmin, ymin] = (pts.min(axis=0).ravel() - 250.5).astype(int)
+    [xmax, ymax] = (pts.max(axis=0).ravel() + 250.5).astype(int)
     t = [-xmin, -ymin]
     Ht = np.array([[1, 0, t[0]], [0, 1, t[1]], [0, 0, 1]], dtype=np.float64)
     result = np.ones((ymax-ymin, xmax-xmin, 3), dtype=np.uint8)*255
     cv2.warpPerspective(img, Ht, (xmax-xmin, ymax-ymin), result, borderValue=(255,255,255))
     return result, Ht
 
-def plane_normal(pts):
+def plane_normal(pts, Kinv):
     pts_ = np.zeros_like(pts)
     pts_[0] = pts[0]
     pts_[1] = pts[3]
@@ -72,7 +72,8 @@ def plane_normal(pts):
     pts_, _ = split_annotations(pts_)
     _,_,vp1 = gen_lines_and_intersection(pts[0], pts[1])
     _,_,vp2 = gen_lines_and_intersection(pts_[0], pts_[1])
-    vl = proj_line(vp1, vp2)
+    # vl = proj_line(vp1, vp2)
+    vl = np.cross(Kinv @ vp1, Kinv @vp2)
     return vl
 
 def plane_angles(pts1, pts2, conic):

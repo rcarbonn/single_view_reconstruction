@@ -16,7 +16,7 @@ def add_lines(ax, line_annots, ptype='lines', cols='random'):
     if cols=='random':
         colors = np.repeat(np.random.uniform(0, 1, (n//2,1,3)), 2, axis=0)
     else:
-        colors=cols
+        colors=['b']*(n//2)
     if ptype=='lines':
         for i,l in enumerate(ldata):
             line = l2d(l[0], l[1], color=colors[i], linewidth=1.0)

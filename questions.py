@@ -51,8 +51,8 @@ def q1(args):
 
     fig, ax = plt.subplots()
     ax.imshow(image)
-    ax.scatter(img_pts[:,0], img_pts[:,1], c='r', s=1)
-    add_lines(ax, lines, ptype=args.viz)
+    # ax.scatter(img_pts[:,0], img_pts[:,1], c='r', s=1)
+    add_lines(ax, lines, ptype=args.viz, cols='blue')
 
     # q1b
     if os.path.isfile(DATA_CONFIG['q1']['corr_cube']):
@@ -131,11 +131,12 @@ def q3(args):
     pts = reshape_plane_annots(annots123)
     K, vpts = computeK(pts)
     Kinv = np.linalg.inv(K)
-    normals = np.array([Kinv @ plane_normal(annots[i]).reshape(-1,1) for i in range(n_annots)])
+    normals = np.array([Kinv @ plane_normal(annots[i], Kinv).reshape(-1,1) for i in range(n_annots)])
     normals = normals.reshape(-1,3)
     directions = (Kinv @ annots_all_.T).T
     directions = directions/np.linalg.norm(directions, axis=1).reshape(-1,1)
     normals = normals/np.linalg.norm(normals, axis=1).reshape(-1,1)
+    print(normals)
     # set depth of point 2 = 20 mts along the camera
     pt2 = 20*directions[1].reshape(-1,1)
     # point 2 lies on plane 1,2,4,5
@@ -147,12 +148,14 @@ def q3(args):
     l3 = -dp1/directions[2].dot(normals[0])
     pt3 = l3*directions[2].reshape(-1,1)
     dp3 = -normals[2].T@pt3
-    plane_depths = [dp1, dp2, dp3, dp4, dp5]
+    plane_depths = [dp1[0], dp2[0], dp3[0], dp4[0], dp5[0]]
+    print(plane_depths)
     h,w,c = img.shape
     pts3d = []
     cols = []
     for i in range(n_annots):
         mask = cv2.fillConvexPoly(np.zeros((h,w)), annots[i].astype(np.int32), 1)
+        # mask = cv2.fillPoly(np.zeros((h,w)), annots[i].astype(np.int32), 1)
         colors = img[mask==1]
         cols.append(colors)
         pts = np.asarray(np.column_stack(np.where(mask == 1)), dtype=np.float32)
@@ -173,5 +176,5 @@ def q3(args):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-    ax.view_init(elev=-50.0, azim=-90.0, roll=0)
+    ax.view_init(elev=-60.0, azim=-60.0, roll=0)
     plt.show()

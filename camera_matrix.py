@@ -117,11 +117,11 @@ def computeK2(h1s, h2s):
     # s1 = np.sqrt(1)/np.max(np.linalg.norm(pts1, axis=1))
     # s2 = np.sqrt(1)/np.max(np.linalg.norm(pts2, axis=1))
     # T1 = np.array([[s1, 0, -s1*m1[0]],
-                   # [0, s1, -s1*m1[1]],
-                   # [0, 0, 1]])
+    #                [0, s1, -s1*m1[1]],
+    #                [0, 0, 1]])
     # T2 = np.array([[s2, 0, -s2*m2[0]],
-                   # [0, s2, -s2*m2[1]],
-                   # [0, 0, 1]])
+    #                [0, s2, -s2*m2[1]],
+    #                [0, 0, 1]])
     # pts1 = T1@h1s.T
     # pts2 = T2@h2s.T
     # h1s = pts1.T

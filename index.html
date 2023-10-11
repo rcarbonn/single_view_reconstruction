@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .center {
+            text-align: center;
+        }
+        table, th, td {
+            border: 1px solid black;
+            /* border-collapse: collapse; */
+            border-radius: 10px;
+        }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <h1 id="hw2-single-view-reconstruction">HW2: Single View Reconstruction</h1>
+    <p><img src="results/zero.png" width="50" height="50"></p>
+    <h3>AndrewID: rhire</h3>
+    <p>**NOTE: Images are high resolution, please zoom-in if required**</p>
+
+    <!-- Question 1 -->
+    <h2 id="q1">Camera matrix from 2D-3D correspondences</h2>
+    <h3><strong>(a) Stanford Bunny (15 points) </strong></h3>
+    <h3><strong>Surface points and bounding box</strong></h3>
+    <div class="center">
+        <table style="width:80%">
+            <tr>
+                <th>Input Image</th>
+                <th>Surface points</th>
+                <th>Bounding box</th>
+            </tr>
+            <tr>
+                <td><img src="results/bunny.jpeg" height="300" width="400"></td>
+                <td><img src="results/sb1.png" height="300" width="400"></td>
+                <td><img src="results/bb1.png" height="300" width="400"></td>
+            </tr>
+        </table>
+    </div>
+
+    <h3><strong>(b) Cuboid (15 points) </strong></h3>
+    <h3><strong>Annotated points and fun with projections</strong></h3>
+    <div class="center">
+        <table style="width:80%">
+            <tr>
+                <th>Input Image</th>
+                <th>Annotated 2d points</th>
+                <th>Results</th>
+            </tr>
+            <tr>
+                <td><img src="results/cube1.png" height="300" width="400"></td>
+                <td><img src="results/cube_annots.png" height="300" width="400"></td>
+                <td><img src="results/cube_res.png" height="300" width="400"></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Question 2 -->
+    <h2 id="q2">Camera calibration from annotations</h2>
+    <h3><strong>(a) Camera calibration from vanishing points (20 points) </strong></h3>
+    <div class="center">
+        <table style="width:80%">
+            <tr>
+                <th>Input Image</th>
+                <th>Annotated parallel lines</th>
+                <th>Vanishing points + Principal point</th>
+            </tr>
+            <tr>
+                <td><img src="results/q2a.png" height="300" width="400"></td>
+                <td><img src="results/annotq2a.png" height="300" width="400"></td>
+                <td><img src="results/q2a_vps.png" height="300" width="400"></td>
+            </tr>
+        </table>
+    </div>
+    <div class="center">
+        <h3>Computed K matrix:</h3>
+        <samp>
+                \[
+                    K = \begin{bmatrix}
+                    1154.178  &   0.  &    575.066 \\
+                       0.   &  1154.178  & 431.9391 \\
+                       0.  &      0.     &   1.    
+                            \end{bmatrix}
+                \]
+        </samp>
+    </div>
+    <div >
+        <h3>Implementation details</h3>
+        Three orthogonal vanishing points can be used to estimate the Image of the abosute Conic (IAC) if we assume that the camera has
+        zero skew and that its pixels are square
+        <p>
+        With the above mentioned assumptions, the IAC can we written as
+
+        \[
+            \omega = \begin{bmatrix}
+            w_1 & 0 & w_2 \\
+            0 & w_1 & w_3 \\
+            w_2 & w_3 & w_4
+            \end{bmatrix}
+        \]
+        Each pair of vanishing points \(v_i, v_j\) generates the equation \(v_i^T\omega v_j=0\) which is linear in the elements of \(\omega\).
+        The constraints from the three pairs of vanishing points can be stacked together to form an homogeneour equation
+        $$
+        Aw = 0
+        $$
+        where A is a \( 3\times 4\) matrix. More specifically each row of A corresponds to
+        $$
+        A_i = 
+        \begin{bmatrix}
+            v_1*v_2+v_1*v_2 & v_1*v_2+v_1*v_2 & v_1*v_2+v_1*v_2 & v_1*v_2
+        \end{bmatrix}
+        $$
+        Thus with 3 constraints, we can use SVD to find the vector \(w\) in the null space of A.
+        This \(w\) is then rearranged to form the \(\omega\) matrix which can then decomposed into an upper triangular matrix using cholesky decomposition.
+
+        $$
+            \omega = K^{-T}K^{-1}
+        $$
+        where \(K\) is an upper triangular matrix. 
+        For calculating the principal point we can use the fact that it lies at the orthocenter of the triangle formed by the three vanishing points,
+        or by observation, the last columns of \(K\) represents the principal point
+        </p>
+        <!-- <samp>
+                \[
+                    K = \begin{bmatrix}
+                    1154.178  &   0.  &    575.066 \\
+                       0.   &  1154.178  & 431.9391 \\
+                       0.  &      0.     &   1.    
+                            \end{bmatrix}
+                \]
+        </samp> -->
+    </div>
+
+    <h3><strong>(b) Camera calibration from metric planes (20 points) </strong></h3>
+    <h4><strong>Visualizations of annotations used</strong></h4>
+    <div class="center">
+        <table style="width:80%">
+            <tr>
+                <th>Input Image</th>
+                <th>Annotated square 1</th>
+                <th>Annotated square 2</th>
+                <th>Annotated square 3</th>
+            </tr>
+            <tr>
+                <td><img src="results/q2b.png" height="300" width="400"></td>
+                <td><img src="results/annotq2b1.png" height="300" width="400"></td>
+                <td><img src="results/annotq2b2.png" height="300" width="400"></td>
+                <td><img src="results/annotq2b3.png" height="300" width="400"></td>
+            </tr>
+        </table>
+    </div>
+    <h4><strong>Plane Angles</strong></h4>
+    <div class="center">
+        <table style="width:30%">
+            <tr>
+                <th>Plane IDs</th>
+                <th>Angle between planes (deg)</th>
+            </tr>
+            <tr>
+                <td>Plane1 & Plane 2</td>
+                <td>67.28</td>
+            </tr>
+            <tr>
+                <td>Plane2 & Plane 3</td>
+                <td>92.20</td>
+            </tr>
+            <tr>
+                <td>Plane1 & Plane 3</td>
+                <td>94.71</td>
+            </tr>
+        </table>
+    </div>
+    <div class="center">
+        <h3>Computed K matrix:</h3>
+        <samp>
+                \[
+                    K = \begin{bmatrix}
+                    1076.92  &   -4.52  &    511.56 \\
+                       0.   &  1076.26  & 395.52 \\
+                       0.  &      0.     &   1.    
+                            \end{bmatrix}
+                \]
+        </samp>
+    </div>
+    <div >
+        <h3>Implementation details</h3>
+        <h4> Getting camera intrinsics: </h4>
+        In this case we relax the assumptions of zero-skew and square pixels for the intrinsics matrix.
+        We have three planes in a single image, which can be mapped to metric planes in \(\mathbf{R}^2\) and vice-versa by a homography.
+        Thus we assume, that a metric plane defined by points,
+        $$
+            src\_points =(x) = [[0,0], [1,0], [1,1], [0,1]]
+        $$
+        map to a plane annotated in the image with points
+        $$ 
+        dst\_points =(x^{'})
+        $$
+        Using the tools developed in the previous assigment we can compute the homography \(H\) which relates these points.
+        \[
+            A_i = \begin{bmatrix}
+                    0 & -w^{'}\mathbf{x}^T & y^{'}\mathbf{x}^T \\
+                    w^{'}\mathbf{x}^T & 0 & -x^{'}\mathbf{x}^T 
+                    \end{bmatrix}
+            \quad \quad
+            \text{follwed by}
+            \quad \quad
+
+            h = svd(A)
+        \]
+
+
+        We know that the circular points in the metric plane,
+        $$
+            I = [1 \quad i \quad 0]^T \quad\quad J = [i \quad -i \quad 0]^T
+        $$
+        lie on the absolute conic and their projections to the image plane lie on the image of the absolute conic \(\omega\).
+        This results in 2 linear constraints from a single plane, namely,
+        $$
+            h_1^T\omega h_2 = 0
+        $$
+        $$
+            h_1^T \omega h_1 - h_2^T\omega h_2 = 0
+        $$
+        where,
+        $$
+        H = [h_1, h_2, h_3]
+        $$
+
+        Thus, repeating this process for the 3 annotated planes, we get 6 linear constraints on \(\omega\) which has 5 DOFs.
+        We, again rearrange the constraints to be of the form
+        $$
+            Aw = 0
+        $$
+        where,
+        $$
+        A_i  = \begin{bmatrix}
+        h1[0]*h2[0] & h1[0]*h2[1]+h1[1]*h2[0] & h1[0]*h2[2]+h1[2]*h2[0] & h1[1]*h2[1] & h1[1]*h2[2]+h1[2]*h2[1] & h1[2]*h2[2] \\
+        h1[0]*h1[0]-h2[0]*h2[0] & 2*(h1[0]*h1[1]-h2[0]*h2[1]) & 2*(h1[0]*h1[2]-h2[0]*h2[2]) & h1[1]*h1[1]-h2[1]*h2[1] & 2*(h1[1]*h1[2]-h2[1]*h2[2]) & h1[2]*h1[2]-h2[2]*h2[2]
+        \end{bmatrix}
+        $$
+        Again, using SVD on the resulting \(6 \times 5\), A matrix, we get the vector \(\omega\) in the null space of A.
+        To solve the camera intrinsics, we decompose \(\omega\) using cholesky decomposition and get invert the resulting upper triangular matrix
+
+        <h4> Evaluating plane angles: </h4>
+        The angle between two planes in 3D can be calculated from the dot product of their normal vectors.
+        <p>To compute the normal vectors of the annotated planes, we first need to find two vanishing points for each plane.
+        This can be easily done using annotation of parallel lines, </p>
+        $$
+            v = l_1 \times l_2
+        $$
+        The direction vector a vanishing point is given by, 
+        $$
+            d = K^{-1} v
+        $$
+        The normal to the plane will be given by cross product of the direction vectors of the vanishing points. Thus,
+        $$
+            n = d_1 \times d_2
+        $$
+        The angle can be evaluated by as,
+        $$
+            \theta = cos^{-1}(\frac{n_1.n_2}{||n_1|| ||n_2||})
+        $$
+
+    </div>
+
+    <!-- Question 3 -->
+    <h2 id="q3">Single View Reconstruction</h2>
+    <h3><strong>(a) Colored point cloud from single image (30 points) </strong></h3>
+    <div class="center">
+        <table style="width:85%">
+            <tr>
+                <th>Input Image</th>
+                <th>Annotations</th>
+                <th>Reconstruction View 1</th>
+                <th>Reconstruction View 2</th>
+            </tr>
+            <tr>
+                <td><img src="results/q3.png" height="300" width="400"></td>
+                <td><img src="results/annotq3.png" height="300" width="400"></td>
+                <td><img src="results/3dview1.png" height="300" width="400"></td>
+                <td><img src="results/3dview2.png" height="300" width="400"></td>
+            </tr>
+        </table>
+    </div>
+    <div >
+        <h3>Implementation details</h3>
+        <h4> Camera intrinsics </h4>
+        We start by annotating three orthoganal planes, finding three orthogonal points and using the algorithm described in Q.2 (a) to compute the K matrix.
+        <p>
+        <h4> Choosing depth </h4>
+        Next, we compute all the normals for all annotated planes, using the method described in the section above. We then choose a point common to most of the annotated planes,
+        point - 2 in our case and fix its depth to be 20 mts. We also compute the direction vectors of all the annotated points using \(d = K^{-1}u\)
+        </p>
+        Thus 3D, coordinates of point 2 will be \((x,y,z) = \) \(20*d_2\).
+        <p>
+        <h4> Equation of plane </h4>
+            The equation of a plane is give by,
+            $$
+                n.X + a = 0
+            $$
+            Using the coordinates of point 2, we can get the plane depths (a) for planes, 1,2,4,5. Plane 3 is the horizonatal ground plane as shown in the image above.
+        </p>
+        <p>
+            Depth of plane 3 can be deduced from point 3, since point 3 lies on both plane 1 and plane 3, we already know the equation of plane 1 from point 2.
+        </p>
+        <h4> Plane-ray intersection </h4>
+        Once all the equations have been determined, we find all the pixels which lie inside the annotated planes using cv2.fillConvexPoly. Using,
+        $$
+            d = K^{-1} u
+        $$
+        we get the direction of all rays which originate from the plane pixels, now we just have to find their point of intersection with the corresponding 3d plane
+        $$
+            \lambda = -a_i / (d.n_i)
+        $$
+        Thus, the XYZ coordinates of each point will be \(\lambda * d\)
+        
+    </div>  
+
+</body>
+</html>
